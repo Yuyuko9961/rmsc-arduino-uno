@@ -1,0 +1,7 @@
+.pio
+.vscode/
+include/
+test/
+
+lib/README
+*.json
