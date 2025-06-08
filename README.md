@@ -7,6 +7,4 @@
     - **OLDE屏幕:** SH1106, 128x64, I2C
     - **旋转编码器:** EC11
 
----
-
-**[rmsc-mod 项目仓库](https://github.com/Voemp/rmsc-mod)**
+> **[rmsc-mod 项目仓库](https://github.com/Voemp/rmsc-mod)**

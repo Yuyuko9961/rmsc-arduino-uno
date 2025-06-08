@@ -2,8 +2,8 @@
 #define page_h
 
 #include <U8g2lib.h>
-#include <drawText.h>
 #include <constant.h>
+#include <drawBitmaps.h>
 
 class Page {
 

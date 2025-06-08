@@ -29,7 +29,6 @@ void Page::resetData() {
 void Page::resetExtraData() {
     dataID_selected = dataLen_selected = dataInfo_selected = 0;
     memset(pageTitle, 0, DATALINE_LENGTH);
-    selectedPos = 0;
 }
 
 // 绘制页面
@@ -68,7 +67,7 @@ void Page::drawPage2(U8G2_SH1106_128X64_NONAME_1_HW_I2C& u8g2) {
     u8g2.drawFrame(2, 2, 124, 60);
     // 表头区
     drawText(4, 4, pageTitle, dataLen_selected, u8g2);
-    u8g2.drawBox(104, 4, 20, 10);
+    drawStat(104, 4, dataInfo_selected, u8g2);
     u8g2.drawHLine(2, 15, 124);
     // 主要文字区
     uint8_t posY[DATALINE_NUM] = {17, 28, 39, 50};
@@ -115,6 +114,7 @@ void Page::showPrevLine() {
 void Page::showNextPage() {
     if (currentPage == 0) {
         currentPage = 1;
+        selectedPos = 0;
         resetExtraData();
         memcpy_P(pageTitle, page1Title, PAGE1TITLE_LEN);
         resetData();
