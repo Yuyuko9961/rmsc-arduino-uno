@@ -3,6 +3,7 @@
 // 构造函数
 Page::Page() {
     currentPage = 0;
+    resetData();
 }
 
 // 析构函数
@@ -13,7 +14,7 @@ Page::~Page() {
 // 重置页面数据
 void Page::resetData() {
     for (uint8_t i = 0; i < DATALINE_NUM; i++) {
-        dataID[i] = dataLen[i] = dataInfo[i] = 0;
+        dataLen[i] = dataInfo[i] = 0;
     }
     memset(dataLine1, 0, DATALINE_LENGTH);
     memset(dataLine2, 0, DATALINE_LENGTH);
@@ -27,7 +28,7 @@ void Page::resetData() {
 
 // 重置页面中的其他信息 (title等)
 void Page::resetExtraData() {
-    dataID_selected = dataLen_selected = dataInfo_selected = 0;
+    dataLen_selected = dataInfo_selected = 0;
     memset(pageTitle, 0, DATALINE_LENGTH);
 }
 
@@ -61,7 +62,7 @@ void Page::drawPage1(U8G2_SH1106_128X64_NONAME_1_HW_I2C& u8g2) {
 
 }
 
-// 绘制数据详情页 (page2)
+// 绘制产物列表页 (page2)
 void Page::drawPage2(U8G2_SH1106_128X64_NONAME_1_HW_I2C& u8g2) {
     u8g2.drawFrame(0, 0, 128, 64);
     u8g2.drawFrame(2, 2, 124, 60);
@@ -82,13 +83,12 @@ void Page::showNextLine() {
     } else {
         // 向上轮转行数据
         for (uint8_t i = 0; i < DATALINE_NUM - 1; i++) {
-            dataID[i] = dataID[i + 1];
             dataLen[i] = dataLen[i + 1];
             dataInfo[i] = dataInfo[i + 1];
             pageData[i] = pageData[i + 1];
         }
         updatePageMsg(MSG_NEXT_LINE); // 发送页面信息的更新请求
-        updatePage(); // 期望返回: [255, 255, 255, 新行ID]
+        updatePage();
     }
 }
 
@@ -100,13 +100,12 @@ void Page::showPrevLine() {
     } else {
         // 向下轮转行数据
         for (uint8_t i = DATALINE_NUM - 1; i > 0; i--) {
-            dataID[i] = dataID[i - 1];
             dataLen[i] = dataLen[i - 1];
             dataInfo[i] = dataInfo[i - 1];
             pageData[i] = pageData[i - 1];
         }
         updatePageMsg(MSG_PREV_LINE); // 发送页面信息的更新请求
-        updatePage(); // 期望返回: [新行ID, 255, 255, 255]
+        updatePage();
     }
 }
 
@@ -117,18 +116,17 @@ void Page::showNextPage() {
         selectedPos = 0;
         resetExtraData();
         memcpy_P(pageTitle, page1Title, PAGE1TITLE_LEN);
-        resetData();
-        refreshPage();
+        updatePageMsg(MSG_NEXT_PAGE);
+        updatePage();
     } else if (currentPage == 1 && (dataInfo[selectedPos] & 4)) {
-        // 需要当前选中配置项有物品空间才能跳转至数据详情页
+        // 当前选中配置项有存储空间, 跳转至产物列表页
         currentPage = 2;
         resetExtraData();
         memcpy(pageTitle, pageData[selectedPos], DATALINE_LENGTH);
-        dataID_selected = dataID[selectedPos];
         dataLen_selected = dataLen[selectedPos];
         dataInfo_selected = dataInfo[selectedPos];
-        resetData();
-        refreshPage();
+        updatePageMsg(MSG_NEXT_PAGE);
+        updatePage();
     }
 }
 
@@ -138,14 +136,14 @@ void Page::showPrevPage() {
         currentPage = 1;
         resetExtraData();
         memcpy_P(pageTitle, page1Title, PAGE1TITLE_LEN);
-        resetData();
-        refreshPage();
+        updatePageMsg(MSG_PREV_PAGE);
+        updatePage();
     }
 }
 
-// 刷新页面 (定时刷新或翻页时触发)
+// 刷新页面 (定时刷新)
 void Page::refreshPage() {
-    updatePageMsg(MSG_ENTIRE_PAGE); // 发送页面信息的更新请求
+    updatePageMsg(MSG_REFRESH_PAGE); // 发送页面信息的更新请求
     updatePage();
 }
 
@@ -153,45 +151,45 @@ void Page::refreshPage() {
 void Page::triggerMsg() {
     int32_t data = 0;
     if (currentPage == 1 && (dataInfo[selectedPos] & 2)) {
-        // 需要当前配置项有按钮事件才能触发
-        updateLineMsg(MSG_TRIGGER, dataID[selectedPos]);
+        // 当前配置项有按钮事件
+        updateLineMsg(MSG_TRIGGER, selectedPos);
         data = Serial.read();
-        dataInfo[selectedPos] = (data >= 0 && data <= 255) ? (uint8_t)data : 0;
+        if (data != -1) {
+            dataInfo[selectedPos] = (uint8_t)data;
+        }
     } else if (currentPage == 2 && (dataInfo_selected & 2)) {
-        // 需要当前配置项有按钮事件才能触发
-        updateLineMsg(MSG_TRIGGER, dataID_selected);
+        // 当前配置项有按钮事件
+        updateLineMsg(MSG_TRIGGER, selectedPos);
         data = Serial.read();
-        dataID_selected = (data >= 0 && data <= 255) ? (uint8_t)data : 0;
+        if (data != -1) {
+            dataInfo_selected = (uint8_t)data;
+        }
     }
 }
 
 // 更新一整页的信息
 void Page::updatePage() {
-    uint8_t dataStat[DATALINE_NUM] = {};
-    int32_t data = 0;
-    memset(dataStat, 0, DATALINE_NUM);
+    int32_t data = 0; // 每次调用 read() 从串口缓冲区获得的数据
     for (uint8_t line = 0; line < DATALINE_NUM; line++) {
-        data = Serial.read(); // 获取数据变更状态
-        dataStat[line] = (data >= 0 && data <= 255) ? (uint8_t)data : 0;
-    }
-    for (uint8_t line = 0; line < DATALINE_NUM; line++) {
-        if (dataStat[line] == LINE_NOCHANGE) {
-            continue; // 若该行无变化则跳过更新
+        data = Serial.read(); // 读取一个字节
+        data = (data != -1) ? (uint8_t)data : BITMAP_LINE_EMPTY;
+        if (data == BITMAP_LINE_UNCHANGED) {
+            continue; // 当前行未改变, 跳过后续
         }
         // 清空该行数据
-        dataID[line] = dataLen[line] = dataInfo[line] = 0;
+        dataLen[line] = dataInfo[line] = 0;
         memset(pageData[line], 0, DATALINE_LENGTH);
-        if (dataStat[line] == LINE_EMPTY) {
-            continue; // 若该行为空, 清空数据后跳过更新
+        if (data == BITMAP_LINE_START) {
+            updateLine(line); // 当前行收到新内容, 需要更新
+            if (line + 1 < DATALINE_NUM) {
+                // 还有未收到的更新信息, 发送请求
+                updateLineMsg(MSG_NEW_LINE, line + 1);
+            }
         }
-        // 若该行不为空, 更新数据
-        dataID[line] = dataStat[line];
-        if (currentPage == 1) {
-            data = Serial.read(); // 获取该行配置信息
-            dataInfo[line] = (data >= 0 && data <= 255) ? (uint8_t)data : 0;
-        }
-        updateLineMsg(MSG_SINGLE_LINE, dataID[line]); // 发送该行数据的更新请求
-        updateLine(line); // 读取新获取到的该行内容
+    }
+    // 若存在, 清空输入缓存中无法处理的剩余信息
+    while (Serial.available()) {
+        Serial.read();
     }
 }
 
@@ -199,27 +197,26 @@ void Page::updatePage() {
 void Page::updatePageMsg(uint8_t sign) {
     uint8_t msgBuffer[SERIAL_TX_BUFFER_SIZE]; // msg发送缓冲区
     memset(msgBuffer, 0, SERIAL_TX_BUFFER_SIZE);
-    msgBuffer[0] = currentPage == 1 ? HEADER_PAGE1 : HEADER_PAGE2; // header
+    msgBuffer[0] = HEADER_SEND; // 请求消息的 header
     msgBuffer[1] = sign; // 消息类型
-    for (uint8_t i = 0; i < DATALINE_NUM; i++) {
-        msgBuffer[i + 2] = dataID[i];
-    }
-    msgSendLoop(msgBuffer, 6);
+    msgBuffer[2] = '\n'; // 结束符
+    msgSendLoop(msgBuffer, 3);
 }
 
 // 更新一行数据
 void Page::updateLine(uint8_t line) {
-    uint8_t count = 0, pos = 0;
-    int32_t data = 0;
+    uint8_t count = 0; // 控制何时进行字符宽度判断的计数器
+    uint8_t pos = 0; // bitmap 读取指针
+    int32_t data = 0; // 每次调用 read() 从串口缓冲区获得的数据
     while (Serial.available()) {
-        data = Serial.read(); // 读取一个8位字符
-        data = (data >= 0 && data <= 255) ? (uint8_t)data : 0;
-        if (count == 0) { // 当前字符是一个bitmap的首位或bitmap段结束标志
-            if (data == BITMAP_END) { // 字符是bitmap段结束标志
-                break; // bitmap段已结束, 跳出循环
-            } else if (data & 128) { // 当前bitmap为全字符
+        data = Serial.read(); // 读取一个字节
+        data = (data != -1) ? (uint8_t)data : 0;
+        if (count == 0) { // 当前字节用于判断字符的宽度
+            if (data & BITMAP_LINE_END) {
+                break; // bitmap 段已结束, 跳出循环
+            } else if (data & BITMAP_FULL_WIDTH) {
                 count += 13; // 计数器增加一个全字符
-            } else { // 当前bitmap为半字符
+            } else {
                 count += 10; // 计数器增加一个半字符
             }
             dataLen[line]++; // 若没有跳出, 字符串总长度+1
@@ -227,16 +224,21 @@ void Page::updateLine(uint8_t line) {
         pageData[line][pos++] = data; // 读取数据, 读取指针自增
         count--; // 计数器自减
     }
+    if (currentPage == 1) {
+        // 若当前为配置列表页, 从结束标记中提取该行的配置信息
+        dataInfo[line] = data & 0b00000111;
+    }
 }
 
 // 发送单行数据的更新请求
-void Page::updateLineMsg(uint8_t sign, uint8_t ID) {
+void Page::updateLineMsg(uint8_t sign, uint8_t Line) {
     uint8_t msgBuffer[SERIAL_TX_BUFFER_SIZE]; // msg发送缓冲区
     memset(msgBuffer, 0, SERIAL_TX_BUFFER_SIZE);
-    msgBuffer[0] = currentPage == 1 ? HEADER_PAGE1 : HEADER_PAGE2; // header
+    msgBuffer[0] = HEADER_SEND; // 请求消息的 header
     msgBuffer[1] = sign; // 消息类型
-    msgBuffer[2] = ID;
-    msgSendLoop(msgBuffer, 3);
+    msgBuffer[2] = Line; // 要请求的行
+    msgBuffer[3] = '\n'; // 结束符
+    msgSendLoop(msgBuffer, 4);
 }
 
 // 消息发送等待循环
@@ -248,22 +250,25 @@ void Page::msgSendLoop(uint8_t msgBuffer[SERIAL_TX_BUFFER_SIZE], uint8_t len) {
             Serial.write(msgBuffer, len);
             lastSendTime = currentTime;
         }
-        if (Serial.available() && checkHeader()) {
-            break; // 信息头检查通过, 跳出请求循环
-        }
-        while (Serial.available()) {
-            Serial.read(); // 检查不通过, 清空串口输入缓存
+        if (Serial.available()) {
+            if (checkHeader()) {
+                break; // 信息头检查通过, 跳出请求循环
+            }
+            // 检查不通过, 清空输入缓存中无法处理的剩余信息
+            while (Serial.available()) {
+                Serial.read();
+            }
         }
     }
     delay(50); // 小延迟, 等待全部数据传输完成
 }
 
-// 检查信息头
+// 检查接收消息的信息头
 bool Page::checkHeader() {
     uint8_t header = Serial.read();
     if (currentPage == 1) {
-        return header == HEADER_PAGE1;
+        return header == HEADER_RECEIVE_PAGE1;
     } else {
-        return header == HEADER_PAGE2;
+        return header == HEADER_RECEIVE_PAGE2;
     }
 }

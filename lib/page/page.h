@@ -10,9 +10,8 @@ class Page {
 private:
     // 关键信息
     uint8_t currentPage;             // 当前页码
-    uint8_t dataID[DATALINE_NUM];    // 当前页数据行的ID
-    uint8_t dataLen[DATALINE_NUM];   // 当前页bitmap部分长度
-    uint8_t dataInfo[DATALINE_NUM];  // 当前页数据额外信息
+    uint8_t dataLen[DATALINE_NUM];   // 当前页每行字符串长度
+    uint8_t dataInfo[DATALINE_NUM];  // 当前页每行数据额外信息
     uint8_t* pageData[DATALINE_NUM]; // 当前页全部信息的指针数组
     uint8_t dataLine1[DATALINE_LENGTH]; // 实际存储第1行信息的数组
     uint8_t dataLine2[DATALINE_LENGTH]; // 实际存储第2行信息的数组
@@ -21,8 +20,7 @@ private:
     // 其他信息
     uint8_t pageTitle[DATALINE_LENGTH]; // 当前页标题
     uint8_t selectedPos;       // 选中位置
-    uint8_t dataID_selected;   // 选中配置的ID
-    uint8_t dataLen_selected;  // 选中配置的bitmap部分长度
+    uint8_t dataLen_selected;  // 选中配置的字符串长度
     uint8_t dataInfo_selected; // 选中配置的额外信息
 
 public:
@@ -42,7 +40,7 @@ public:
     void updatePage();
     void updatePageMsg(uint8_t sign);
     void updateLine(uint8_t line);
-    void updateLineMsg(uint8_t sign, uint8_t ID);
+    void updateLineMsg(uint8_t sign, uint8_t Line);
     void msgSendLoop(uint8_t msgBuffer[SERIAL_TX_BUFFER_SIZE], uint8_t len);
     bool checkHeader();
 };

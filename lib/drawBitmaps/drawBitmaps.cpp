@@ -28,7 +28,7 @@ void drawText(uint8_t x, uint8_t y, uint8_t line[], uint8_t wordsNum, U8G2_SH110
     uint8_t pos = 0, alrDisplayed = 0;
     uint8_t decoded[20] = {};
     while (alrDisplayed < wordsNum) {
-        if (line[pos] & 128) {
+        if (line[pos] & BITMAP_FULL_WIDTH) {
             decodeWord(line + pos, decoded, true);
             u8g2.drawXBM(x, y, 10, 10, decoded);
             x += 10;
@@ -53,13 +53,13 @@ void drawTextArea(uint8_t x, uint8_t y[], uint8_t* lines[], uint8_t wordsNums[],
 // 绘制一行的数据状态
 void drawStat(uint8_t x, uint8_t y, uint8_t dataStat, U8G2_SH1106_128X64_NONAME_1_HW_I2C& u8g2) {
     if (dataStat & 4) { // 该配置有存储空间
-        u8g2.drawXBMP(x + 12, y, 8, 10, storageAvailable);
+        u8g2.drawXBMP(x + 1, y, 8, 10, storageAvailable);
     }
     if (dataStat & 2) { // 该配置有开关
         if (dataStat & 1) { // 开关开启
-            u8g2.drawXBMP(x, y, 11, 10, switchOn);
+            u8g2.drawXBMP(x + 9, y, 11, 10, switchOn);
         } else {
-            u8g2.drawXBMP(x, y, 11, 10, switchOff);
+            u8g2.drawXBMP(x + 9, y, 11, 10, switchOff);
         }
     }
 }
