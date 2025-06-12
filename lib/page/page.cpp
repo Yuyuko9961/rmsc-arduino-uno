@@ -89,6 +89,9 @@ void Page::showNextLine() {
             pageData[i] = pageData[i + 1];
         }
         pageData[DATALINE_NUM - 1] = temp;
+        // 滚转后, 清空第3行的数据 (原第0行)
+        dataLen[DATALINE_NUM - 1] = dataInfo[DATALINE_NUM - 1] = 0;
+        memset(pageData[DATALINE_NUM - 1], 0, DATALINE_LENGTH);
         updateMsg(MSG_NEXT_LINE); // 发送页面信息的更新请求
         updatePage();
     }
@@ -108,6 +111,9 @@ void Page::showPrevLine() {
             pageData[i] = pageData[i - 1];
         }
         pageData[0] = temp;
+        // 滚转后, 清空第0行的数据 (原第3行)
+        dataLen[0] = dataInfo[0] = 0;
+        memset(pageData[0], 0, DATALINE_LENGTH);
         updateMsg(MSG_PREV_LINE); // 发送页面信息的更新请求
         updatePage();
     }
