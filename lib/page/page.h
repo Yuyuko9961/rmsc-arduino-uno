@@ -38,9 +38,9 @@ public:
     void refreshPage();
     void triggerMsg();
     void updatePage();
-    void updatePageMsg(uint8_t sign);
     void updateLine(uint8_t line);
-    void updateLineMsg(uint8_t sign, uint8_t Line);
+    void updateMsg(uint8_t sign);
+    void updateMsg(uint8_t sign, uint8_t Line);
     void msgSendLoop(uint8_t msgBuffer[SERIAL_TX_BUFFER_SIZE], uint8_t len);
     bool checkHeader();
 };

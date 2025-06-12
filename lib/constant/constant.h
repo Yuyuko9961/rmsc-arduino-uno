@@ -47,11 +47,11 @@
 #define MSG_LOOP_INTERVAL 2000
 #define MSG_SYS_INIT     0 /* &0\n */
 #define MSG_REFRESH_PAGE 1 /* &1\n */
-#define MSG_NEXT_PAGE    2 /* &2\n */
-#define MSG_PREV_PAGE    3 /* &3\n */
+#define MSG_JUMPTO_PAGE1 2 /* &2\n */
+#define MSG_JUMPTO_PAGE2 3 /* &3[line]\n */
 #define MSG_NEXT_LINE    4 /* &4\n */
 #define MSG_PREV_LINE    5 /* &5\n */
-#define MSG_NEW_LINE     6 /* &6[line]\n */
+#define MSG_MORE_LINE    6 /* &6\n */
 #define MSG_TRIGGER      7 /* &7[line]\n */
 
 // Opening

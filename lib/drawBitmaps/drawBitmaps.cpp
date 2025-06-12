@@ -53,13 +53,13 @@ void drawTextArea(uint8_t x, uint8_t y[], uint8_t* lines[], uint8_t wordsNums[],
 // 绘制一行的数据状态
 void drawStat(uint8_t x, uint8_t y, uint8_t dataStat, U8G2_SH1106_128X64_NONAME_1_HW_I2C& u8g2) {
     if (dataStat & 4) { // 该配置有存储空间
-        u8g2.drawXBMP(x + 1, y, 8, 10, storageAvailable);
+        u8g2.drawXBMP(x, y, 8, 10, storageAvailable);
     }
     if (dataStat & 2) { // 该配置有开关
         if (dataStat & 1) { // 开关开启
-            u8g2.drawXBMP(x + 9, y, 11, 10, switchOn);
+            u8g2.drawXBMP(x + 8, y, 12, 10, switchOn);
         } else {
-            u8g2.drawXBMP(x + 9, y, 11, 10, switchOff);
+            u8g2.drawXBMP(x + 8, y, 12, 10, switchOff);
         }
     }
 }
