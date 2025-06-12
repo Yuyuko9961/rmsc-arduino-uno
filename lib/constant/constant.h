@@ -16,7 +16,7 @@
 // Data
 #define DATALINE_NUM 4
 #define DATALINE_LENGTH 156
-#define PAGE_REFRESH_INTERVAL 20000
+#define PAGE_REFRESH_INTERVAL 5000
 
 // Protocol
 /*
@@ -35,23 +35,31 @@
 // Message Receive
 #define HEADER_RECEIVE_PAGE1 '@'
 #define HEADER_RECEIVE_PAGE2 '#'
-#define BITMAP_HALF_WIDTH 0       /* 在读取 bitmap 时使用 (000?????) */
-#define BITMAP_LINE_START 32      /* 在读取 bitmap 前使用 (00100000) */
-#define BITMAP_LINE_END 64        /* 在读取 bitmap 时使用 (010?????) */
-#define BITMAP_LINE_EMPTY 96      /* 在读取 bitmap 前使用 (01100000) */
-#define BITMAP_FULL_WIDTH 128     /* 在读取 bitmap 时使用 (100?????) */
+#define BITMAP_HALF_WIDTH     0   /* 在读取 bitmap 时使用 (000?????) */
+#define BITMAP_LINE_START     32  /* 在读取 bitmap 前使用 (00100000) */
+#define BITMAP_LINE_END       64  /* 在读取 bitmap 时使用 (010?????) */
+#define BITMAP_LINE_EMPTY     96  /* 在读取 bitmap 前使用 (01100000) */
+#define BITMAP_FULL_WIDTH     128 /* 在读取 bitmap 时使用 (100?????) */
 #define BITMAP_LINE_UNCHANGED 160 /* 在读取 bitmap 前使用 (10100000) */
 
 // Message Send
 #define HEADER_SEND '&'
 #define MSG_LOOP_INTERVAL 2000
-#define MSG_SYS_INIT 0     /* &0\n */
+#define MSG_SYS_INIT     0 /* &0\n */
 #define MSG_REFRESH_PAGE 1 /* &1\n */
-#define MSG_NEXT_PAGE 2    /* &2\n */
-#define MSG_PREV_PAGE 3    /* &3\n */
-#define MSG_NEXT_LINE 4    /* &4\n */
-#define MSG_PREV_LINE 5    /* &5\n */
-#define MSG_NEW_LINE 6     /* &6[line]\n */
-#define MSG_TRIGGER 7      /* &7[line]\n */
+#define MSG_NEXT_PAGE    2 /* &2\n */
+#define MSG_PREV_PAGE    3 /* &3\n */
+#define MSG_NEXT_LINE    4 /* &4\n */
+#define MSG_PREV_LINE    5 /* &5\n */
+#define MSG_NEW_LINE     6 /* &6[line]\n */
+#define MSG_TRIGGER      7 /* &7[line]\n */
+
+// Opening
+#define LOGO_WIDTH  64
+#define LOGO_HEIGHT 32
+#define ANIMATION_IMG_WIDTH  32
+#define ANIMATION_IMG_HEIGHT 32
+#define ANIMATION_IMG_POSX   48
+#define ANIMATION_IMG_POSY   16
 
 #endif

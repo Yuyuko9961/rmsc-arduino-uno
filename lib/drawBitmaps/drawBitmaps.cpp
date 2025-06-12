@@ -81,3 +81,30 @@ void drawSelectBox(uint8_t y, U8G2_SH1106_128X64_NONAME_1_HW_I2C& u8g2) {
     u8g2.drawVLine(125, y + 5, 4);
     u8g2.setDrawColor(1);
 }
+
+// 绘制启动动画与 Logo
+void drawOpening(U8G2_SH1106_128X64_NONAME_1_HW_I2C& u8g2) {
+    for (uint8_t i = 0; i < ANIMATION_FRAME_NUM; i++) {
+        u8g2.firstPage();
+        do {
+            u8g2.drawFrame(0, 0, 128, 64);
+            u8g2.drawXBMP(ANIMATION_IMG_POSX, ANIMATION_IMG_POSY, ANIMATION_IMG_WIDTH, ANIMATION_IMG_HEIGHT, openingAnimation[i]);
+        } while (u8g2.nextPage());
+        if (i & 0b00000111) {
+            delay(10);
+        } else {
+            delay(300);
+        }
+    }
+    for (uint8_t i = 0; i < 10; i++) {
+        u8g2.firstPage();
+        do {
+            u8g2.drawFrame(0, 0, 128, 64);
+            u8g2.drawXBMP(ANIMATION_IMG_POSX - (i << 2), ANIMATION_IMG_POSY, ANIMATION_IMG_WIDTH, ANIMATION_IMG_HEIGHT, openingAnimation[0]);
+            if (i == 9) {
+                u8g2.drawXBMP(ANIMATION_IMG_POSX + 4, ANIMATION_IMG_POSY, LOGO_WIDTH, LOGO_HEIGHT, programLogo);
+            }
+        } while (u8g2.nextPage());
+        delay(10);
+    }
+}

@@ -11,5 +11,6 @@ void drawTextArea(uint8_t x, uint8_t y[], uint8_t* lines[], uint8_t wordsNums[],
 void drawStat(uint8_t x, uint8_t y, uint8_t dataStat, U8G2_SH1106_128X64_NONAME_1_HW_I2C& u8g2);
 void drawStatArea(uint8_t x, uint8_t y[], uint8_t dataStats[], U8G2_SH1106_128X64_NONAME_1_HW_I2C& u8g2);
 void drawSelectBox(uint8_t y, U8G2_SH1106_128X64_NONAME_1_HW_I2C& u8g2);
+void drawOpening(U8G2_SH1106_128X64_NONAME_1_HW_I2C& u8g2);
 
 #endif

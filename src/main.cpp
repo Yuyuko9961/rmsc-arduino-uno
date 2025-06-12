@@ -13,10 +13,12 @@ void setup() {
     pinMode(PIN_BAK, INPUT_PULLUP);
     // 开启端口
     Serial.begin(115200);
-    delay(100);
     // 创建屏幕绘制类
     u8g2.begin();
     delay(100);
+    // 绘制启动动画与 Logo
+    drawOpening(u8g2);
+    delay(500);
     // 进入配置列表页
     page.showNextPage();
 }
